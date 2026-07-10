@@ -1,0 +1,32 @@
+[project]
+name = "ai-first-crm-hcp-backend"
+version = "0.1.0"
+description = "FastAPI backend scaffold for the AI-First CRM HCP module."
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "sqlalchemy",
+  "alembic",
+  "psycopg[binary]",
+  "python-dotenv",
+  "pydantic-settings",
+  "groq",
+  "langgraph",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "httpx",
+  "ruff",
+  "mypy",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["app/tests"]
