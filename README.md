@@ -1,332 +1,185 @@
 # AI-First CRM HCP Module
 
-Production-oriented project scaffold for an AI-first Healthcare Professional (HCP) CRM module.
+## Overview
 
-This repository includes the HCP interaction UI, FastAPI CRUD backend, PostgreSQL persistence, and a LangGraph-powered HCP assistant endpoint.
+AI-First CRM HCP Module is a full-stack healthcare CRM workflow for logging Healthcare Professional (HCP) interactions with AI assistance. The React interface combines a structured interaction form with an AI chat assistant that extracts CRM-ready data from natural language. The FastAPI backend persists interaction records in PostgreSQL and exposes CRUD APIs plus a LangGraph-powered assistant endpoint. Groq provides LLM inference with a production fallback model path.
+
+## Features
+
+- AI-powered HCP interaction logging
+- Edit interactions
+- Search interaction history
+- Summarize interactions
+- Suggest follow-up actions
+- Automatic structured form autofill
+- PostgreSQL persistence
+- LangGraph agent
+- Groq LLM integration
 
 ## Tech Stack
 
-- Frontend: React, Vite, Redux Toolkit, Material UI
-- Backend: FastAPI, SQLAlchemy
-- Database: PostgreSQL
-- AI Framework: LangGraph
-- LLM Provider/Model: Groq `gemma2-9b-it`
-- LLM Fallback: Groq currently reports `gemma2-9b-it` as decommissioned, so the backend supports `llama-3.1-8b-instant` as a configurable fallback model.
-- Font: Google Inter
+| Layer | Technologies |
+| --- | --- |
+| Frontend | React, Redux Toolkit, TypeScript, Material UI, Vite |
+| Backend | FastAPI, SQLAlchemy, Alembic |
+| Database | PostgreSQL, Neon compatible |
+| AI | LangGraph, Groq, `gemma2-9b-it` primary, `llama-3.1-8b-instant` fallback |
+
+## Architecture
+
+```text
+User
+  |
+  v
+React
+  |
+  v
+FastAPI
+  |
+  v
+LangGraph
+  |
+  v
+Groq LLM
+  |
+  v
+CRUD Repository
+  |
+  v
+PostgreSQL
+```
 
 ## Project Structure
 
 ```text
-ai-first-crm-hcp/
+.
 +-- backend/
 |   +-- app/
 |   |   +-- api/
-|   |   |   +-- deps/
-|   |   |   +-- v1/
-|   |   |       +-- routes/
 |   |   +-- core/
 |   |   +-- db/
-|   |   |   +-- migrations/
-|   |   |   +-- repositories/
-|   |   +-- domains/
-|   |   |   +-- hcp/
-|   |   |       +-- models/
-|   |   |       +-- schemas/
-|   |   |       +-- services/
-|   |   |       +-- use_cases/
-|   |   +-- integrations/
-|   |   |   +-- groq/
-|   |   |   +-- langgraph/
-|   |   |       +-- agents/
-|   |   |       +-- graphs/
-|   |   |       +-- state/
+|   |   +-- domains/hcp/
+|   |   +-- integrations/langgraph/
 |   |   +-- shared/
-|   |   |   +-- exceptions/
-|   |   |   +-- logging/
-|   |   |   +-- security/
-|   |   +-- tests/
-|   |       +-- integration/
-|   |       +-- unit/
 |   +-- scripts/
+|   +-- alembic.ini
 |   +-- pyproject.toml
 +-- frontend/
-|   +-- public/
-|   |   +-- fonts/
 |   +-- src/
 |   |   +-- app/
-|   |   +-- assets/
-|   |   +-- components/
-|   |   |   +-- common/
-|   |   |   +-- layout/
-|   |   +-- config/
-|   |   +-- features/
-|   |   |   +-- hcp/
-|   |   |       +-- api/
-|   |   |       +-- components/
-|   |   |       +-- hooks/
-|   |   |       +-- pages/
-|   |   |       +-- slices/
-|   |   |       +-- types/
-|   |   +-- hooks/
-|   |   +-- lib/
-|   |   +-- routes/
-|   |   +-- services/
+|   |   +-- features/hcp/
 |   |   +-- store/
 |   |   +-- styles/
 |   |   +-- theme/
-|   |   +-- tests/
 |   +-- package.json
 |   +-- vite.config.ts
-+-- infra/
-|   +-- docker/
-|   +-- postgres/
-+-- docs/
-|   +-- architecture/
-|   +-- api/
-|   +-- decisions/
-+-- .env.example
-+-- .gitignore
 +-- docker-compose.yml
++-- .env.example
++-- README.md
 ```
 
-## Folder Explanation
+## Setup
 
-### `backend/`
+### 1. Clone
 
-Backend service boundary for the FastAPI application. This folder owns HTTP APIs, business orchestration, persistence, AI integrations, and backend tests.
+```bash
+git clone <repository-url>
+cd <repository-folder>
+```
 
-### `backend/app/`
+### 2. Backend
 
-Main Python application package. All importable backend source code should live under this package.
+```bash
+cd backend
 
-### `backend/app/api/`
+# Create virtual environment
+python -m venv .venv
 
-API layer for FastAPI routers, dependency wiring, request-level concerns, and versioned route registration.
+# Activate virtual environment
+# Windows
+.venv\Scripts\activate
 
-### `backend/app/api/deps/`
+# macOS/Linux
+source .venv/bin/activate
 
-Reusable FastAPI dependencies such as database sessions, authentication context, tenant context, request tracing, and permissions.
+# Install dependencies
+python -m pip install -e .
 
-### `backend/app/api/v1/routes/`
+# Run migrations
+alembic upgrade head
 
-Versioned API route modules. HCP-specific endpoints will be added here later without mixing route logic into domain services.
+# Start FastAPI
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
 
-### `backend/app/core/`
+### 3. Frontend
 
-Application-wide configuration and runtime setup, such as environment settings, CORS, app lifecycle, constants, and dependency container wiring.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### `backend/app/db/`
+### 4. Environment Variables
 
-Database infrastructure for SQLAlchemy setup, PostgreSQL sessions, base metadata, migration integration, and persistence helpers.
+Create a `.env` file from `.env.example` and set local values.
 
-### `backend/app/db/migrations/`
+```env
+# Backend
+ENVIRONMENT=local
+PROJECT_NAME=AI-First CRM HCP API
+API_V1_PREFIX=/api/v1
+BACKEND_HOST=0.0.0.0
+BACKEND_PORT=8000
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/ai_first_crm
 
-Alembic migration files will live here once database schemas are introduced.
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+LOG_LEVEL=INFO
 
-### `backend/app/db/repositories/`
+# Frontend
+VITE_API_BASE_URL=http://localhost:8000/api/v1
 
-Repository classes for database access patterns. This keeps SQLAlchemy queries out of API routes and higher-level use cases.
+# AI
+GROQ_API_KEY=
+GROQ_MODEL=gemma2-9b-it
+GROQ_FALLBACK_MODEL=llama-3.1-8b-instant
+```
 
-### `backend/app/domains/`
+### 5. Run
 
-Domain-oriented business modules. Each domain should own its models, schemas, services, and use cases.
+| Service | URL |
+| --- | --- |
+| Backend | `http://localhost:8000` |
+| Swagger | `http://localhost:8000/docs` |
+| OpenAPI JSON | `http://localhost:8000/api/v1/openapi.json` |
+| Frontend | `http://localhost:5173` |
 
-### `backend/app/domains/hcp/`
+## Example AI Prompt
 
-HCP CRM domain boundary. Future HCP entities, validation schemas, workflows, and business rules will be added here.
+```text
+Met Dr. Sharma today at 3 PM. We discussed CardioMax efficacy. Shared product brochure. He responded positively and requested a follow-up meeting next Friday.
+```
 
-### `backend/app/domains/hcp/models/`
+The AI assistant classifies the intent, extracts structured fields, logs the interaction, persists it in PostgreSQL, and returns JSON that autofills the React form.
 
-SQLAlchemy ORM models for HCP-related database tables.
+## API Endpoints
 
-### `backend/app/domains/hcp/schemas/`
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/v1/health` | Health check |
+| POST | `/api/v1/hcp-assistant/chat` | LangGraph AI assistant chat |
+| POST | `/api/v1/hcp-interactions` | Create HCP interaction |
+| GET | `/api/v1/hcp-interactions` | List/search HCP interactions |
+| GET | `/api/v1/hcp-interactions/{interaction_id}` | Get interaction by ID |
+| PATCH | `/api/v1/hcp-interactions/{interaction_id}` | Update interaction |
+| DELETE | `/api/v1/hcp-interactions/{interaction_id}` | Delete interaction |
 
-Pydantic request and response schemas for HCP APIs and service contracts.
+## Notes
 
-### `backend/app/domains/hcp/services/`
+- Groq automatically falls back to `llama-3.1-8b-instant` because `gemma2-9b-it` is currently unavailable.
+- Docker Compose is included for local PostgreSQL, and Neon PostgreSQL is also supported through `DATABASE_URL`.
+- Real credentials belong in `.env`; `.env.example` contains placeholders only.
 
-Domain services for reusable HCP business behavior.
+## License
 
-### `backend/app/domains/hcp/use_cases/`
-
-Application-level orchestration for specific HCP workflows. Use cases coordinate repositories, services, and AI agents.
-
-### `backend/app/integrations/`
-
-External system integration boundary. Provider-specific code lives here instead of leaking into domain logic.
-
-### `backend/app/integrations/groq/`
-
-Groq client configuration and LLM adapter code will live here, including the `gemma2-9b-it` model integration.
-
-### `backend/app/integrations/langgraph/`
-
-LangGraph-specific orchestration layer for state definitions, graphs, nodes, and agents.
-
-### `backend/app/integrations/langgraph/agents/`
-
-Future AI agents for HCP workflows.
-
-### `backend/app/integrations/langgraph/graphs/`
-
-LangGraph graph definitions and workflow composition.
-
-### `backend/app/integrations/langgraph/state/`
-
-Shared graph state types and checkpoint-related structures.
-
-### `backend/app/shared/`
-
-Cross-cutting backend utilities that are not owned by a single domain.
-
-### `backend/app/shared/exceptions/`
-
-Custom exception classes and exception mapping.
-
-### `backend/app/shared/logging/`
-
-Structured logging setup and request correlation helpers.
-
-### `backend/app/shared/security/`
-
-Security utilities such as token validation, password helpers, RBAC primitives, and audit helpers.
-
-### `backend/app/tests/`
-
-Backend test suite, split by unit and integration tests.
-
-### `backend/scripts/`
-
-Operational scripts for backend tasks such as local setup, migration helpers, seed scripts, and maintenance commands.
-
-### `frontend/`
-
-Frontend application boundary for the React + Vite client.
-
-### `frontend/public/`
-
-Static files served by Vite without bundling.
-
-### `frontend/public/fonts/`
-
-Local font assets if Inter is self-hosted later. The project can also load Inter from Google Fonts through the frontend entrypoint.
-
-### `frontend/src/`
-
-Main frontend source root.
-
-### `frontend/src/app/`
-
-Application bootstrap concerns such as app providers, root shell composition, and global initialization.
-
-### `frontend/src/assets/`
-
-Images, icons, static SVGs, and other frontend assets imported by React components.
-
-### `frontend/src/components/`
-
-Shared UI components used across multiple features.
-
-### `frontend/src/components/common/`
-
-Generic reusable components such as buttons, loaders, empty states, and form controls.
-
-### `frontend/src/components/layout/`
-
-Layout components such as navigation, page shell, sidebar, header, and content containers.
-
-### `frontend/src/config/`
-
-Frontend runtime configuration, environment mappings, API base URLs, and constants.
-
-### `frontend/src/features/`
-
-Feature-sliced frontend modules. Each feature owns its UI, API calls, Redux slices, hooks, and types.
-
-### `frontend/src/features/hcp/`
-
-HCP CRM feature boundary. Screens, state, API bindings, and UI specific to HCP workflows will be added here.
-
-### `frontend/src/features/hcp/api/`
-
-HCP-specific frontend API client functions.
-
-### `frontend/src/features/hcp/components/`
-
-HCP-specific React components.
-
-### `frontend/src/features/hcp/hooks/`
-
-HCP-specific React hooks.
-
-### `frontend/src/features/hcp/pages/`
-
-Route-level HCP pages.
-
-### `frontend/src/features/hcp/slices/`
-
-Redux Toolkit slices for HCP state.
-
-### `frontend/src/features/hcp/types/`
-
-TypeScript types for the HCP frontend feature.
-
-### `frontend/src/hooks/`
-
-Reusable application-wide React hooks.
-
-### `frontend/src/lib/`
-
-Frontend utility libraries and wrappers around third-party packages.
-
-### `frontend/src/routes/`
-
-Route declarations and route guards.
-
-### `frontend/src/services/`
-
-Shared frontend services such as HTTP client setup, auth transport, telemetry, and error handling.
-
-### `frontend/src/store/`
-
-Redux Toolkit store configuration and shared store utilities.
-
-### `frontend/src/styles/`
-
-Global CSS, reset styles, and base typography.
-
-### `frontend/src/theme/`
-
-Material UI theme configuration, design tokens, palette, typography, and component overrides.
-
-### `frontend/src/tests/`
-
-Frontend test setup and shared testing utilities.
-
-### `infra/`
-
-Infrastructure and local environment assets.
-
-### `infra/docker/`
-
-Dockerfiles and container-specific configuration.
-
-### `infra/postgres/`
-
-PostgreSQL initialization scripts and database-local configuration.
-
-### `docs/`
-
-Project documentation.
-
-### `docs/architecture/`
-
-Architecture diagrams, module boundaries, and system design notes.
-
-### `docs/api/`
-
-API documentation, request/response contracts, and integration notes.
-
-### `docs/decisions/`
-
-Architecture Decision Records (ADRs) for important technical choices.
+MIT

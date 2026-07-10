@@ -88,8 +88,6 @@ export const sendDraftMessage = createAsyncThunk<
     conversation_id: conversationId,
   };
 
-  console.log("Thunk payload:", payload);
-
   try {
     return await sendHcpAssistantMessage(payload);
   } catch (error) {

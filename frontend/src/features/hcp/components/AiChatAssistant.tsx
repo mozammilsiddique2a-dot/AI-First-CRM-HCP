@@ -21,7 +21,6 @@ export function AiChatAssistant() {
 
   const handleSend = () => {
     const inputValue = draftMessage.trim();
-    console.log("Typed input before dispatch:", inputValue);
 
     if (!inputValue) {
       dispatch(setDraftMessageError("Please enter a message."));

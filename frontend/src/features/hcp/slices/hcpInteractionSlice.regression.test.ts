@@ -74,5 +74,3 @@ assertEqual(state.form.attendees, "", "second attendees");
 assertDeepEqual(state.form.materialsShared, [], "second materialsShared");
 assertDeepEqual(state.form.samplesDistributed, [], "second samplesDistributed");
 assertEqual(state.form.followUpActions, "", "second followUpActions");
-
-console.log("hcpInteractionSlice regression passed: log_interaction resets stale form state.");

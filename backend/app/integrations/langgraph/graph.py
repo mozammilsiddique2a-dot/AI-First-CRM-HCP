@@ -1,4 +1,3 @@
-import logging
 from typing import Any
 
 from langgraph.graph import StateGraph
@@ -7,22 +6,6 @@ from app.domains.hcp.services.interaction_service import HcpInteractionService
 from app.integrations.langgraph.router import HcpIntentRouter
 from app.integrations.langgraph.state import ConversationMessage, HcpAgentState
 from app.integrations.langgraph.tools import HcpAgentTools
-
-logger = logging.getLogger(__name__)
-
-
-def _debug_state(label: str, state: dict[str, Any]) -> None:
-    logger.info(
-        "LangGraph state after %s: user_message=%r selected_tool=%r extracted_entities=%s "
-        "tool_result=%s response=%s history_count=%s",
-        label,
-        state.get("user_message"),
-        state.get("selected_tool"),
-        state.get("extracted_entities"),
-        state.get("tool_result"),
-        state.get("response"),
-        len(state.get("conversation_history", [])),
-    )
 
 
 class HcpLangGraphAgent:
@@ -45,9 +28,7 @@ class HcpLangGraphAgent:
             "response": {},
             "conversation_history": conversation_history,
         }
-        _debug_state("initial_state", initial_state)
         final_state = self._graph.invoke(initial_state)
-        _debug_state("graph_complete", final_state)
         return final_state["response"]
 
     def _build_graph(self):
@@ -60,9 +41,7 @@ class HcpLangGraphAgent:
         return graph.compile()
 
     def _route_intent(self, state: HcpAgentState) -> dict[str, Any]:
-        next_state = self._router.route(state)
-        _debug_state("route_intent", {**state, **next_state})
-        return next_state
+        return self._router.route(state)
 
     def _execute_tool(self, state: HcpAgentState) -> dict[str, Any]:
         tool_result = self._tools.run(
@@ -82,5 +61,4 @@ class HcpLangGraphAgent:
             "response": response,
             "conversation_history": next_history,
         }
-        _debug_state("execute_tool", {**state, **next_state})
         return next_state

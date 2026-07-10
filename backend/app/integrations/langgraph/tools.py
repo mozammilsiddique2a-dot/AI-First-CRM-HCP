@@ -125,12 +125,7 @@ class HcpAgentTools:
         self._fallback_model = settings.groq_fallback_model
 
     def run(self, tool_name: str, user_message: str, entities: dict[str, Any]) -> dict[str, Any]:
-        logger.info(
-            "Executing LangGraph HCP tool: selected_tool=%s entities=%s user_message=%r",
-            tool_name,
-            entities,
-            user_message,
-        )
+        logger.info("Executing LangGraph HCP tool: selected_tool=%s", tool_name)
 
         handlers = {
             "log_interaction": self.log_interaction,
@@ -178,20 +173,11 @@ class HcpAgentTools:
             user_message=user_message,
             model=EditInteractionExtraction,
         )
-        logger.info(
-            "Edit interaction extracted arguments: interaction_id=%s hcp_name=%r updates=%s entities=%s",
-            extracted.interaction_id,
-            extracted.hcp_name,
-            extracted.updates,
-            entities,
-        )
         updates = self._clean_updates(extracted.updates, user_message=user_message, entities=entities)
 
         interaction_id = extracted.interaction_id or self._extract_uuid(user_message)
         if interaction_id is None:
             interaction_id = self._find_latest_interaction_id(extracted.hcp_name or entities.get("hcp_name"))
-        logger.info("Edit interaction matched interaction_id=%s", interaction_id)
-
         if interaction_id is None:
             raise ResourceNotFoundError(
                 "No HCP interaction could be found for the edit request. Provide an interaction id or known HCP name."
@@ -200,9 +186,7 @@ class HcpAgentTools:
         if not updates:
             raise AppBadRequestError("No editable HCP interaction fields were found in the edit request.")
 
-        logger.info("Edit interaction update payload before validation: %s", updates)
         update_payload = HcpInteractionUpdate(**updates)
-        logger.info("Edit interaction update payload after validation: %s", update_payload.model_dump(exclude_unset=True))
         updated = self._service.update_interaction(interaction_id, update_payload)
         data = self._interaction_to_dict(updated)
         return self._success(
@@ -232,16 +216,6 @@ class HcpAgentTools:
             if extracted.interaction_type
             and self._message_mentions_value(user_message, extracted.interaction_type)
             else None
-        )
-        logger.info(
-            "Search interaction filters: hcp_name=%r interaction_date=%s product=%r interaction_type=%r limit=%s raw=%s entities=%s",
-            hcp_name,
-            interaction_date,
-            product,
-            interaction_type,
-            extracted.limit,
-            extracted.model_dump(),
-            entities,
         )
         interactions = self._service.search_interactions(
             limit=extracted.limit,
@@ -328,7 +302,6 @@ class HcpAgentTools:
         model: type[T],
     ) -> T:
         data = self._call_json(system_prompt=system_prompt, user_message=user_message)
-        logger.info("Parsed Groq JSON for %s: %s", model.__name__, data)
         try:
             return model.model_validate(data)
         except ValidationError as exc:
@@ -358,7 +331,6 @@ class HcpAgentTools:
 
         completion = self._create_completion(messages)
         content = completion.choices[0].message.content or "{}"
-        logger.info("Raw Groq response content: %r", content)
         try:
             return self._parse_json_content(content)
         except json.JSONDecodeError as exc:
