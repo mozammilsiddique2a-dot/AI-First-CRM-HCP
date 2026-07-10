@@ -83,8 +83,8 @@ PostgreSQL
 ### 1. Clone
 
 ```bash
-git clone <repository-url>
-cd <repository-folder>
+git clone https://github.com/mozammilsiddique2a-dot/AI-First-CRM-HCP.git
+cd AI-First-CRM-HCP
 ```
 
 ### 2. Backend
@@ -140,7 +140,7 @@ LOG_LEVEL=INFO
 VITE_API_BASE_URL=http://localhost:8000/api/v1
 
 # AI
-GROQ_API_KEY=
+GROQ_API_KEY=your_groq_api_key
 GROQ_MODEL=gemma2-9b-it
 GROQ_FALLBACK_MODEL=llama-3.1-8b-instant
 ```
